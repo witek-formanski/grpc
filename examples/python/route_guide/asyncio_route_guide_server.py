@@ -19,6 +19,7 @@ import math
 import time
 from typing import AsyncIterable, Iterable
 
+from google.protobuf.timestamp_pb2 import Timestamp
 import grpc
 import route_guide_pb2
 import route_guide_pb2_grpc
@@ -66,6 +67,13 @@ class RouteGuideServicer(route_guide_pb2_grpc.RouteGuideServicer):
 
     def __init__(self) -> None:
         self.db = route_guide_resources.read_route_guide_database()
+
+    async def Tick(self, request, unused_context) -> AsyncIterable[Timestamp]:
+        while True:
+            timestamp = Timestamp()
+            timestamp.GetCurrentTime()
+            yield timestamp
+            await asyncio.sleep(1)
 
     def GetFeature(
         self, request: route_guide_pb2.Point, unused_context
