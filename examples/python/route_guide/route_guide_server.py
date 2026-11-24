@@ -18,6 +18,7 @@ import logging
 import math
 import time
 
+from google.protobuf.timestamp_pb2 import Timestamp
 import grpc
 import route_guide_pb2
 import route_guide_pb2_grpc
@@ -61,6 +62,13 @@ class RouteGuideServicer(route_guide_pb2_grpc.RouteGuideServicer):
 
     def __init__(self):
         self.db = route_guide_resources.read_route_guide_database()
+
+    def Tick(self, request, context):
+        while context.is_active():
+            timestamp = Timestamp()
+            timestamp.GetCurrentTime()
+            yield timestamp
+            time.sleep(1)
 
     def GetFeature(self, request, context):
         feature = get_feature(self.db, request)

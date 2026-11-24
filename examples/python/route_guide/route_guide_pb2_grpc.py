@@ -2,6 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 import route_guide_pb2 as route__guide__pb2
 
 
@@ -15,6 +17,11 @@ class RouteGuideStub:
         Args:
             channel: A grpc.Channel.
         """
+        self.Tick = channel.unary_stream(
+                '/routeguide.RouteGuide/Tick',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_timestamp__pb2.Timestamp.FromString,
+                )
         self.GetFeature = channel.unary_unary(
                 '/routeguide.RouteGuide/GetFeature',
                 request_serializer=route__guide__pb2.Point.SerializeToString,
@@ -40,6 +47,15 @@ class RouteGuideStub:
 class RouteGuideServicer:
     """Interface exported by the server.
     """
+
+    def Tick(self, request, context):
+        """A server-to-client streaming RPC.
+
+        Streams the current time (UTC) every second.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetFeature(self, request, context):
         """A simple RPC.
@@ -88,6 +104,11 @@ class RouteGuideServicer:
 
 def add_RouteGuideServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'Tick': grpc.unary_stream_rpc_method_handler(
+                    servicer.Tick,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_timestamp__pb2.Timestamp.SerializeToString,
+            ),
             'GetFeature': grpc.unary_unary_rpc_method_handler(
                     servicer.GetFeature,
                     request_deserializer=route__guide__pb2.Point.FromString,
@@ -118,6 +139,23 @@ def add_RouteGuideServicer_to_server(servicer, server):
 class RouteGuide:
     """Interface exported by the server.
     """
+
+    @staticmethod
+    def Tick(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/routeguide.RouteGuide/Tick',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_timestamp__pb2.Timestamp.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def GetFeature(request,
